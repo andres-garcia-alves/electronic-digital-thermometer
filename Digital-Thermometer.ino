@@ -1,21 +1,22 @@
 /*
-Digital Thermometer v1.1
+Digital Thermometer v1.2
 
 Created by: Andres Garcia Alves <andres.garcia.alves@gmail.com>
 Microcontroller: Arduino Nano (ATMega328 @16Mhz)
 
 Version 1.0, 2022.12.08 - Initial release.
 Version 1.1, 2022.12.10 - Re-arrange LEDs pin-out to simplefy PCB.
+Version 1.2, 2022.12.11 - Using masked bits to improve character display
 
 This source code is licensed under GPL v3.0
 
 Pinout (4 digit multiplexed 7-segment display):
 
-     ***(A)***
-  (F)*       *(B)
-     ***(G)***
-  (E)*       *(C)
-     ***(D)***
+      ***(A)***
+  (F) *       * (B)
+      ***(G)***
+  (E) *       * (C)
+      ***(D)***
 
 D00 -> debug (serial port)
 D01 -> debug (serial port)
@@ -234,122 +235,42 @@ void updateDisplay(eDataMode dataMode, byte currentDigit) {
 
 
 void displayCharacter(char character, bool dotEnabled) {
+  byte maskedBits = 0;
 
-  digitalWrite(PIN_LED_DOT, !dotEnabled);
-
-  if (character == '0') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, HIGH);
-  } else if (character == '1') {
-    digitalWrite(PIN_LED_A, HIGH);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, HIGH);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, HIGH);
-    digitalWrite(PIN_LED_G, HIGH);
-  } else if (character == '2') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, HIGH);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, HIGH);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == '3') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, HIGH);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == '4') {
-    digitalWrite(PIN_LED_A, HIGH);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, HIGH);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == '5') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, HIGH);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == '6') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, HIGH);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == '7') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, HIGH);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, HIGH);
-    digitalWrite(PIN_LED_G, HIGH);
-  } else if (character == '8') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == '9') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, LOW);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, HIGH);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == 'c') {
-    digitalWrite(PIN_LED_A, HIGH);
-    digitalWrite(PIN_LED_B, HIGH);
-    digitalWrite(PIN_LED_C, HIGH);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, HIGH);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == 'h') {
-    digitalWrite(PIN_LED_A, HIGH);
-    digitalWrite(PIN_LED_B, HIGH);
-    digitalWrite(PIN_LED_C, LOW);
-    digitalWrite(PIN_LED_D, HIGH);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, LOW);
-  } else if (character == 'C') {
-    digitalWrite(PIN_LED_A, LOW);
-    digitalWrite(PIN_LED_B, HIGH);
-    digitalWrite(PIN_LED_C, HIGH);
-    digitalWrite(PIN_LED_D, LOW);
-    digitalWrite(PIN_LED_E, LOW);
-    digitalWrite(PIN_LED_F, LOW);
-    digitalWrite(PIN_LED_G, HIGH);
-  } else {
-    digitalWrite(PIN_LED_A, HIGH);
-    digitalWrite(PIN_LED_B, HIGH);
-    digitalWrite(PIN_LED_C, HIGH);
-    digitalWrite(PIN_LED_D, HIGH);
-    digitalWrite(PIN_LED_E, HIGH);
-    digitalWrite(PIN_LED_F, HIGH);
-    digitalWrite(PIN_LED_G, HIGH);
+  switch(character) {      //.GFEDCBA (1 = OFF, 0 = ON)
+    case '0': maskedBits = 0b11000000; break;
+    case '1': maskedBits = 0b11111001; break;
+    case '2': maskedBits = 0b10100100; break;
+    case '3': maskedBits = 0b10110000; break;
+    case '4': maskedBits = 0b10011001; break;
+    case '5': maskedBits = 0b10010010; break;
+    case '6': maskedBits = 0b10000010; break;
+    case '7': maskedBits = 0b11111000; break;
+    case '8': maskedBits = 0b10000000; break;
+    case '9': maskedBits = 0b10011000; break;
+    case 'c': maskedBits = 0b10100111; break;
+    case 'h': maskedBits = 0b10001011; break;
+    case 'C': maskedBits = 0b11000110; break;
+    default:  maskedBits = 0b11111111;
   }
+
+  if (dotEnabled) { maskedBits -= 0b10000000; }
+
+  displayLedsByMaskedBits(maskedBits, true);
+}
+
+
+// set individuals leds ON/OFF by mask (format: '.GFEDCBA')
+void displayLedsByMaskedBits(byte maskedBits, boolean ledStatus) {
+
+  digitalWrite(PIN_LED_A, maskedBits & 1);
+  digitalWrite(PIN_LED_B, maskedBits & 2);
+  digitalWrite(PIN_LED_C, maskedBits & 4);
+  digitalWrite(PIN_LED_D, maskedBits & 8);
+  digitalWrite(PIN_LED_E, maskedBits & 16);
+  digitalWrite(PIN_LED_F, maskedBits & 32);
+  digitalWrite(PIN_LED_G, maskedBits & 64);
+  digitalWrite(PIN_LED_DOT, maskedBits & 128);
 }
 
 
