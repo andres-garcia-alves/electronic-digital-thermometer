@@ -56,6 +56,8 @@ See 'Rescources' sub-folder for more pictures of the proyect.
 ### Version History
 
 v1.0 (2022.12.08) - Initial release.  
+v1.1 (2022.12.10) - Re-arrange LEDs pin-out to simplefy PCB.  
+v1.2 (2022.12.11) - Using masked bits to improve character display.  
 
 &nbsp;
 
